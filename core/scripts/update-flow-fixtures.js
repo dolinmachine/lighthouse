@@ -20,7 +20,7 @@ import * as api from '../fraggle-rock/api.js';
 import * as assetSaver from '../lib/asset-saver.js';
 
 const ARTIFACTS_PATH =
-  `${LH_ROOT}/core/test/fixtures/fraggle-rock/artifacts/sample-flow-artifacts.json`;
+  `${LH_ROOT}/core/test/fixtures/fraggle-rock/artifacts/`;
 const FLOW_RESULT_PATH =
   `${LH_ROOT}/core/test/fixtures/fraggle-rock/reports/sample-flow-result.json`;
 const FLOW_REPORT_PATH = `${LH_ROOT}/dist/sample-reports/flow-report/index.html`;
@@ -116,7 +116,7 @@ async function rebaselineArtifacts(artifactKeys) {
 
   if (artifactKeys.length) {
     const newFlowArtifacts = flowArtifacts;
-    flowArtifacts = JSON.parse(fs.readFileSync(ARTIFACTS_PATH, 'utf-8'));
+    flowArtifacts = assetSaver.loadFlowArtifacts(ARTIFACTS_PATH);
     for (let i = 0; i < flowArtifacts.gatherSteps.length; ++i) {
       const gatherStep = flowArtifacts.gatherSteps[i];
       const newGatherStep = newFlowArtifacts.gatherSteps[i];
@@ -128,12 +128,11 @@ async function rebaselineArtifacts(artifactKeys) {
     }
   }
 
-  fs.writeFileSync(ARTIFACTS_PATH, JSON.stringify(flowArtifacts, null, 2));
+  await assetSaver.saveFlowArtifacts(flowArtifacts, ARTIFACTS_PATH);
 }
 
 async function generateFlowResult() {
-  /** @type {LH.UserFlow.FlowArtifacts} */
-  const flowArtifacts = JSON.parse(fs.readFileSync(ARTIFACTS_PATH, 'utf-8'));
+  const flowArtifacts = assetSaver.loadFlowArtifacts(ARTIFACTS_PATH);
   const flowResult = await api.auditFlowArtifacts(flowArtifacts, config);
 
   // Normalize some data so it doesn't change on every update.
