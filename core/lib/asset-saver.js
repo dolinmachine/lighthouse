@@ -104,10 +104,12 @@ function loadFlowArtifacts(basePath) {
 
   flowArtifacts.gatherSteps = [];
   for (const filename of filenames) {
-    const regexResult = /step([0-9]+)/.exec(filename);
+    const regexResult = /^step([0-9]+)$/.exec(filename);
     if (!regexResult) continue;
 
     const index = Number(regexResult[1]);
+    if (!Number.isFinite(index)) continue;
+
     const stepPath = path.join(basePath, filename);
     if (!fs.lstatSync(stepPath).isDirectory()) continue;
 
@@ -118,6 +120,11 @@ function loadFlowArtifacts(basePath) {
     gatherStep.artifacts = loadArtifacts(stepPath);
 
     flowArtifacts.gatherSteps[index] = gatherStep;
+  }
+
+  const missingStepIndex = flowArtifacts.gatherSteps.findIndex(gatherStep => !gatherStep);
+  if (missingStepIndex !== -1) {
+    throw new Error(`Could not find step with index ${missingStepIndex} at ${basePath}`);
   }
 
   return flowArtifacts;
