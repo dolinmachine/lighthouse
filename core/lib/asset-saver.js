@@ -26,6 +26,7 @@ const {promisify} = util;
 // https://nodejs.org/api/stream.html#streams-promises-api
 const pipeline = promisify && promisify(stream.pipeline);
 
+const metaFilename = 'meta.json';
 const artifactsFilename = 'artifacts.json';
 const traceSuffix = '.trace.json';
 const devtoolsLogSuffix = '.devtoolslog.json';
@@ -84,6 +85,45 @@ function loadArtifacts(basePath) {
 }
 
 /**
+ * @param {string} basePath
+ * @return {LH.UserFlow.FlowArtifacts}
+ */
+function loadFlowArtifacts(basePath) {
+  log.log('Reading flow artifacts from disk:', basePath);
+
+  if (!fs.existsSync(basePath)) {
+    throw new Error('No saved flow artifacts found at ' + basePath);
+  }
+
+  /** @type {LH.UserFlow.FlowArtifacts} */
+  const flowArtifacts = JSON.parse(
+    fs.readFileSync(path.join(basePath, metaFilename), 'utf-8')
+  );
+
+  const filenames = fs.readdirSync(basePath);
+
+  flowArtifacts.gatherSteps = [];
+  for (const filename of filenames) {
+    const regexResult = /step([0-9]+)/.exec(filename);
+    if (!regexResult) continue;
+
+    const index = Number(regexResult[1]);
+    const stepPath = path.join(basePath, filename);
+    if (!fs.lstatSync(stepPath).isDirectory()) continue;
+
+    /** @type {LH.UserFlow.GatherStep} */
+    const gatherStep = JSON.parse(
+      fs.readFileSync(path.join(stepPath, metaFilename), 'utf-8')
+    );
+    gatherStep.artifacts = loadArtifacts(stepPath);
+
+    flowArtifacts.gatherSteps[index] = gatherStep;
+  }
+
+  return flowArtifacts;
+}
+
+/**
  * A replacer function for JSON.stingify of the artifacts. Used to serialize objects that
  * JSON won't normally handle.
  * @param {string} key
@@ -96,6 +136,36 @@ function stringifyReplacer(key, value) {
   }
 
   return value;
+}
+
+/**
+ * @param {LH.UserFlow.FlowArtifacts} flowArtifacts
+ * @param {string} basePath
+ * @return {Promise<void>}
+ */
+async function saveFlowArtifacts(flowArtifacts, basePath) {
+  const status = {msg: 'Saving flow artifacts', id: 'lh:assetSaver:saveArtifacts'};
+  log.time(status);
+  fs.mkdirSync(basePath, {recursive: true});
+
+  const {gatherSteps, ...restFlowMetaArtifacts} = flowArtifacts;
+  for (let i = 0; i < gatherSteps.length; ++i) {
+    const {artifacts, ...restMetaArtifacts} = gatherSteps[i];
+    const stepPath = path.join(basePath, `step${i}`);
+    await saveArtifacts(artifacts, stepPath);
+    fs.writeFileSync(
+      path.join(stepPath, metaFilename),
+      JSON.stringify(restMetaArtifacts, stringifyReplacer, 2) + '\n'
+    );
+  }
+
+  fs.writeFileSync(
+    path.join(basePath, metaFilename),
+    JSON.stringify(restFlowMetaArtifacts, stringifyReplacer, 2) + '\n'
+  );
+
+  log.log('Flow artifacts saved to disk in folder:', basePath);
+  log.timeEnd(status);
 }
 
 /**
@@ -331,8 +401,10 @@ function normalizeTimingEntries(timings) {
 
 export {
   saveArtifacts,
+  saveFlowArtifacts,
   saveLhr,
   loadArtifacts,
+  loadFlowArtifacts,
   saveAssets,
   prepareAssets,
   saveTrace,
