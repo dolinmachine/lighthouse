@@ -63,6 +63,7 @@ describe('SidebarRuntimeSettings', () => {
         width: 200,
         height: 200,
         deviceScaleFactor: 3,
+        mobile: true,
       },
     } as any;
     const root = render(<SidebarRuntimeSettings settings={settings}/>, {wrapper});
@@ -88,6 +89,7 @@ describe('SidebarRuntimeSettings', () => {
       screenEmulation: {
         width: 100,
         height: 100,
+        mobile: false,
         deviceScaleFactor: 2,
       },
     } as any;
