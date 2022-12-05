@@ -516,7 +516,7 @@ class Util {
     if (settings.screenEmulation.disabled) {
       deviceEmulation = Util.i18n.strings.runtimeNoEmulation;
     } else if (settings.formFactor === 'desktop') {
-      deviceEmulation = Util.i18n.strings.runtimeNoEmulation;
+      deviceEmulation = Util.i18n.strings.runtimeDesktopEmulation;
     }
 
     const screenEmulation = settings.screenEmulation.disabled ?
