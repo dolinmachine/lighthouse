@@ -1,13 +1,4 @@
 {
-  "name": "Navigation report (www.mikescerealshack.co/)",
-  "config": {
-    "extends": "lighthouse:default",
-    "settings": {
-      "skipAudits": [
-        "uses-http2"
-      ]
-    }
-  },
   "flags": {
     "skipAboutBlank": true
   }

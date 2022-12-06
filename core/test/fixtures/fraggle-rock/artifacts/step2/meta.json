@@ -1,11 +1,5 @@
 {
-  "name": "Search results",
-  "config": {
-    "extends": "lighthouse:default",
-    "settings": {
-      "skipAudits": [
-        "uses-http2"
-      ]
-    }
+  "flags": {
+    "name": "Search results"
   }
 }

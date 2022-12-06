@@ -1,11 +1,5 @@
 {
-  "name": "Search input",
-  "config": {
-    "extends": "lighthouse:default",
-    "settings": {
-      "skipAudits": [
-        "uses-http2"
-      ]
-    }
+  "flags": {
+    "name": "Search input"
   }
 }
