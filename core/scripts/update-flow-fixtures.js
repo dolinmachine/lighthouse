@@ -14,6 +14,7 @@ import waitForExpect from 'wait-for-expect';
 import puppeteer from 'puppeteer-core';
 import yargs from 'yargs';
 import {getChromePath} from 'chrome-launcher';
+import log from 'lighthouse-logger';
 
 import {LH_ROOT} from '../../root.js';
 import * as api from '../index.js';
@@ -139,6 +140,9 @@ async function rebaselineArtifacts(artifactKeys) {
   }
 
   await assetSaver.saveFlowArtifacts(flowArtifacts, ARTIFACTS_PATH);
+
+  // Ensure the timing entries from saving the artifacts don't persist into the auditing phase.
+  log.takeTimeEntries();
 }
 
 async function generateFlowResult() {
