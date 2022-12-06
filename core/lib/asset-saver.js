@@ -27,7 +27,7 @@ const {promisify} = util;
 // https://nodejs.org/api/stream.html#streams-promises-api
 const pipeline = promisify && promisify(stream.pipeline);
 
-const metaFilename = 'meta.json';
+const optionsFilename = 'options.json';
 const artifactsFilename = 'artifacts.json';
 const traceSuffix = '.trace.json';
 const devtoolsLogSuffix = '.devtoolslog.json';
@@ -98,7 +98,7 @@ function loadFlowArtifacts(basePath) {
 
   /** @type {LH.UserFlow.FlowArtifacts} */
   const flowArtifacts = JSON.parse(
-    fs.readFileSync(path.join(basePath, metaFilename), 'utf-8')
+    fs.readFileSync(path.join(basePath, optionsFilename), 'utf-8')
   );
 
   const filenames = fs.readdirSync(basePath);
@@ -116,7 +116,7 @@ function loadFlowArtifacts(basePath) {
 
     /** @type {LH.UserFlow.GatherStep} */
     const gatherStep = JSON.parse(
-      fs.readFileSync(path.join(stepPath, metaFilename), 'utf-8')
+      fs.readFileSync(path.join(stepPath, optionsFilename), 'utf-8')
     );
     gatherStep.artifacts = loadArtifacts(stepPath);
 
@@ -156,20 +156,20 @@ async function saveFlowArtifacts(flowArtifacts, basePath) {
   log.time(status);
   fs.mkdirSync(basePath, {recursive: true});
 
-  const {gatherSteps, ...restFlowMetaArtifacts} = flowArtifacts;
+  const {gatherSteps, ...flowOptions} = flowArtifacts;
   for (let i = 0; i < gatherSteps.length; ++i) {
-    const {artifacts, ...restMetaArtifacts} = gatherSteps[i];
+    const {artifacts, ...stepOptions} = gatherSteps[i];
     const stepPath = path.join(basePath, `step${i}`);
     await saveArtifacts(artifacts, stepPath);
     fs.writeFileSync(
-      path.join(stepPath, metaFilename),
-      JSON.stringify(restMetaArtifacts, stringifyReplacer, 2) + '\n'
+      path.join(stepPath, optionsFilename),
+      JSON.stringify(stepOptions, stringifyReplacer, 2) + '\n'
     );
   }
 
   fs.writeFileSync(
-    path.join(basePath, metaFilename),
-    JSON.stringify(restFlowMetaArtifacts, stringifyReplacer, 2) + '\n'
+    path.join(basePath, optionsFilename),
+    JSON.stringify(flowOptions, stringifyReplacer, 2) + '\n'
   );
 
   log.log('Flow artifacts saved to disk in folder:', basePath);
