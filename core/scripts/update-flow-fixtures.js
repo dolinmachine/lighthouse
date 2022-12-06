@@ -20,11 +20,11 @@ import {LH_ROOT} from '../../root.js';
 import * as api from '../index.js';
 import * as assetSaver from '../lib/asset-saver.js';
 
-const ARTIFACTS_PATH =
-  `${LH_ROOT}/core/test/fixtures/fraggle-rock/artifacts/`;
-const FLOW_RESULT_PATH =
-  `${LH_ROOT}/core/test/fixtures/fraggle-rock/reports/sample-flow-result.json`;
+/* eslint-disable max-len */
+const ARTIFACTS_PATH = `${LH_ROOT}/core/test/fixtures/fraggle-rock/artifacts/`;
+const FLOW_RESULT_PATH = `${LH_ROOT}/core/test/fixtures/fraggle-rock/reports/sample-flow-result.json`;
 const FLOW_REPORT_PATH = `${LH_ROOT}/dist/sample-reports/flow-report/index.html`;
+/* eslint-enable max-len */
 
 const args = yargs(process.argv.slice(2))
   .options({
